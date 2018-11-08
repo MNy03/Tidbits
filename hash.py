@@ -6,8 +6,9 @@
 # 		only md5, sha1 or sha256
 #
 
-# Todo: Compare checksums automagically. perhaps as optional argv[3]
-# 	Some issue in matching str(hasher.hexdigest()) and str(sys.argv[3].lower())
+# Todo: Remove ugly code with some kind of for loop on the hashAlgorithm to use.
+# Todo: Remove ugly code if len(sys.argv) == 2
+
 usage = str('''
 hash <file_to_calculate>
 	will output all hashes
