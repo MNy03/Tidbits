@@ -5,63 +5,55 @@
 # 		hash sha1 <file_to_calculate> <checksum to check>
 # 		only md5, sha1 or sha256
 #
+# TODO: Something with a line up of the default.
+import os, hashlib, sys
 
-# Todo: Remove ugly code with some kind of for loop on the hashAlgorithm to use.
-# Todo: Remove ugly code if len(sys.argv) == 2
+def algo():
+	algos = ""
+	for i in hashlib.algorithms_guaranteed:
+		algos += i + " "
+	return(algos)
 
 usage = str('''
 hash <file_to_calculate>
-	will output all hashes
+	will output md5, sha1 & sha256 for the file.
 hash sha1 <file_to_calculate>
 	will output specified hash
 hash sha1 <file_to_calculate> <checksum to check>
 	will output specified hash and checksum.
-only md5, sha1 or sha256
-''')
-import os, hashlib, sys
+possible options:
+''' + algo())
 
-def hashit(fileName):
+
+def hashit(fileName, algorithm):
 	BLOCKSIZE = 65536
+	hasher = hashlib.new(algorithm)
 	with open(fileName, 'rb') as afile:
 	    buf = afile.read(BLOCKSIZE)
 	    while len(buf) > 0:
 	        hasher.update(buf)
 	        buf = afile.read(BLOCKSIZE)
-	print(hasher.hexdigest() + ' '*4 + hashAlgorithm + ' '*4 + fileName)
+	print(hasher.hexdigest() + ' '*4 + algorithm + ' '*4 + fileName)
 	if len(sys.argv) == 4:
 		print(sys.argv[3].lower()+ ' '*4 + 'Checksum to check')
-		if (hasher.hexdigest() == sys.argv[3].lower()) == True:
-			print('Boys and girls, it\'s a match!')
-		else:
-			print('Nope, just nope..')
+		print('Match?: '+ hasher.hexdigest() == sys.argv[3].lower())
 
 
 if len(sys.argv) == 1:
 	print(usage)
 elif len(sys.argv) == 2:
 	fileName = sys.argv[1]
-	hasher = hashlib.sha256()
-	hashAlgorithm = 'sha256'
-	hashit(fileName)
-	hasher = hashlib.md5()
-	hashAlgorithm = 'md5'
-	hashit(fileName)
-	hasher = hashlib.sha1()
-	hashAlgorithm = 'sha1'
-	hashit(fileName)
+	hashit(fileName,'md5')
+	hashit(fileName,'sha1')
+	hashit(fileName,'sha256')
+	print(usage)
 elif len(sys.argv) == 3 or 4:
 	hashAlgorithm = sys.argv[1].lower()
 	fileName = sys.argv[2]
-	if hashAlgorithm == "sha256":
-		hasher = hashlib.sha256()
-		hashit(fileName)
-	elif hashAlgorithm == "md5":
-		hasher = hashlib.md5()
-		hashit(fileName)
-	elif hashAlgorithm == "sha1":
-		hasher = hashlib.sha1()
-		hashit(fileName)
+	if hashAlgorithm in str(hashlib.algorithms_guaranteed):
+		hashit(fileName,hashAlgorithm)
 	else:
 		print(usage)
 else:
 	print(usage)
+
