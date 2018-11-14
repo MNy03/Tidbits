@@ -20,6 +20,8 @@ hash sha1 <file_to_calculate>
 	will output specified hash
 hash sha1 <file_to_calculate> <checksum to check>
 	will output specified hash and checksum.
+hash -m <file1> <file2>
+	will check if both files match using sha256
 possible options:
 ''' + algorithmsAvailable())
 
