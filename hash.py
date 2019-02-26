@@ -28,8 +28,8 @@ def algorithms_available():
     shake_256 md5 blake2s sha3_384 sha1 sha224 sha3_512
     '''
     algos = ""
-    for i in hashlib.algorithms_guaranteed:
-        algos += i + " "
+    for hashes in hashlib.algorithms_guaranteed:
+        algos += hashes + " "
     return algos
 
 USAGE = str('''
@@ -54,18 +54,19 @@ def hash_it(file_name, algorithm='sha256'):
     '''
     with open(file_name, 'rb') as afile:
         buf = afile.read(block_size)
-        while len(buf) > 0:
+        while buf: #Fixed this, was while len(buf) > 0. Seems slower, would be weird, just check.
             hasher.update(buf)
             buf = afile.read(block_size)
+
     '''
     Here it expects a hash to compare. Make sure you add the right algorithm
     '''
     if len(sys.argv) == 4 and sys.argv[1] != '-m':
         match = hasher.hexdigest() == sys.argv[3].lower()
-        RESPONSE = 'Checksum match: '+ str(match)
+        match_response = 'Checksum match: '+ str(match)
     else:
-        RESPONSE = hasher.hexdigest() + ' '*4 + algorithm + ' '*4 + file_name
-    return RESPONSE
+        match_response = hasher.hexdigest() + ' '*4 + algorithm + ' '*4 + file_name
+    return match_response
 
 
 if len(sys.argv) == 1:
@@ -75,13 +76,20 @@ if len(sys.argv) == 1:
     print(USAGE)
 elif sys.argv[1] == '-m':
     '''
-    Compares 2 files using some random_algorithm if you add the option "-m"
+    Compares 2 files using blake2b if you add the option "-m"
     '''
-    matchFiles = hash_it(sys.argv[2]) == hash_it(sys.argv[3])
-    print(sys.argv[2] + ' == ' + sys.argv[3] + '\nmatch using sha256 = ' + str(matchFiles))
+    HASH_ALGORITHM = 'blake2b'
+    MATCH_FILES = hash_it(sys.argv[2], HASH_ALGORITHM) == hash_it(sys.argv[3], HASH_ALGORITHM)
+    if MATCH_FILES is False:
+        MATCH_FILES = " != "
+    else:
+        MATCH_FILES = " == "
+    print(sys.argv[2] + MATCH_FILES + sys.argv[3] + str('''
+                        \nchecked using {0} for performance
+                        ''').format(HASH_ALGORITHM))
 elif sys.argv[1] == '-r':
     '''
-    Random hash from file, excl shake_128 & _256, not in USAGE
+    Random hash from file, excl shake_128 & shake_256, not in USAGE
     '''
     ALGO = random_algorithm()
     while ALGO[:5] == 'shake':
@@ -93,9 +101,10 @@ elif len(sys.argv) == 2:
     Processes the file and returns hashes md5,sha1 & sha256
     '''
     FILE_NAME = sys.argv[1]
-    hashAlgorithm = ['md5','sha1','sha256']
-    for i in hashAlgorithm:
-        print(hash_it(FILE_NAME,i))
+    HASH_ALGORITHM = ['md5', 'sha1', 'sha256']
+    for i in HASH_ALGORITHM:
+        print(hash_it(FILE_NAME, i))
+
 elif len(sys.argv) == 3 or 4:
     '''
     Processes the file and depending on the extra option it processes it with a
